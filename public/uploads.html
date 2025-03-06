@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uploaded Files</title>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        h2 {
+            margin-top: 20px;
+            color: #333;
+            font-size: 24px;
+        }
+
+        #fileContainer {
+            max-width: 900px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 100px);
+            gap: 50px;
+            justify-content: center;
+        }
+
+        .file-item {
+            width: 110px;
+            height: 110px;
+            background: #f9f9f9;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, background 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .file-item:hover {
+            transform: translateY(-2px);
+            background: #e8f0ff;
+        }
+
+        .file-preview {
+            width: 100%;
+            height: 80%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .file-icon {
+            font-size: 30px;
+            color: #007bff;
+        }
+
+        .file-link {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 12px;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1e1e1e;
+                color: #f4f4f4;
+            }
+            #fileContainer {
+                background: #2c2c2c;
+                box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
+            }
+            .file-item {
+                background: #3a3a3a;
+            }
+            .file-item:hover {
+                background: #505050;
+            }
+            .file-link {
+                color: #00aaff;
+            }
+            .file-link:hover {
+                color: #0088cc;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Uploaded Files</h2>
+    
+    <div id="fileContainer"></div>
+
+    <script>
+        function getServerIP() {
+            return localStorage.getItem("serverIP") || window.location.origin;
+        }
+
+        const serverIP = getServerIP();
+        const socket = io(serverIP);
+
+        function fetchFiles() {
+            fetch(`${serverIP}/api/uploads`)
+                .then(res => res.json())
+                .then(files => {
+                    const fileContainer = document.getElementById("fileContainer");
+                    fileContainer.innerHTML = "";
+                    files.forEach(file => addFileToList(file.fileName, file.fileUrl));
+                })
+                .catch(err => console.error("Error fetching files:", err));
+        }
+
+        function addFileToList(fileName, fileUrl) {
+            const fileContainer = document.getElementById("fileContainer");
+            const fileItem = document.createElement("div");
+            fileItem.classList.add("file-item");
+
+            let previewElement;
+
+            if (fileUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i)) {
+                // Image Preview
+                previewElement = document.createElement("img");
+                previewElement.src = fileUrl;
+                previewElement.classList.add("file-preview");
+            } else if (fileUrl.match(/\.(pdf)$/i)) {
+                // PDF Preview
+                previewElement = document.createElement("div");
+                previewElement.classList.add("file-icon");
+                previewElement.innerHTML = "📄"; // PDF icon
+            } else if (fileUrl.match(/\.(txt)$/i)) {
+                // Text File Preview
+                previewElement = document.createElement("div");
+                previewElement.classList.add("file-icon");
+                previewElement.innerHTML = "📝"; // Text icon
+            } else {
+                // Default Icon for Other Files
+                previewElement = document.createElement("div");
+                previewElement.classList.add("file-icon");
+                previewElement.innerHTML = "📁"; // Generic file icon
+            }
+
+            const link = document.createElement("a");
+            link.href = fileUrl;
+            link.target = "_blank";
+            link.classList.add("file-link");
+            link.innerText = fileName.length > 10 ? fileName.substring(0, 10) + "..." : fileName;
+
+            fileItem.appendChild(previewElement);
+            fileItem.appendChild(link);
+            fileContainer.appendChild(fileItem);
+        }
+
+        fetchFiles();
+
+        socket.on("newFile", (data) => {
+            addFileToList(data.fileName, data.fileUrl);
+        });
+    </script>
+</body>
+</html>
