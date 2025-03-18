@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uploaded Files</title>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        h2 {
+            margin-top: 20px;
+            color: #333;
+            font-size: 24px;
+        }
+
+        /* File List Container */
+        #fileContainer {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* File List */
+        #fileList {
+            margin-top: 10px;
+            list-style: none;
+            padding: 0;
+        }
+        .file-item {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+        .file-item:hover {
+            transform: translateY(-2px);
+            background: #e8f0ff;
+        }
+        .file-link {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        .file-link:hover {
+            color: #0056b3;
+        }
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1e1e1e;
+                color: #f4f4f4;
+            }
+            #fileContainer {
+                background: #2c2c2c;
+                box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
+            }
+            .file-item {
+                background: #3a3a3a;
+            }
+            .file-item:hover {
+                background: #505050;
+            }
+            .file-link {
+                color: #00aaff;
+            }
+            .file-link:hover {
+                color: #0088cc;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Uploaded Files</h2>
+    
+    <div id="fileContainer">
+        <ul id="fileList"></ul>
+    </div>
+
+    <div class="download-container">
+        <input type="text" id="fileNameInput" class="file-input" placeholder="Enter file name">
+        <button class="download-btn" onclick="downloadFile()">Download</button>
+    </div>
+
+    <script>
+        
+        function getServerIP() {
+            return localStorage.getItem("serverIP") || window.location.origin;
+        }
+    
+        // Function to save a new server IP manually
+        function saveServerIP() {
+            const ip = document.getElementById("serverAddress").value.trim();
+            if (!ip) return alert("Please enter a valid IP address");
+            localStorage.setItem("serverIP", `http://${ip}`);
+            location.reload(); // Reload the page to apply changes
+        }
+    
+        const serverIP = getServerIP(); // Get the current server IP
+        const socket = io(serverIP); // Connect to the WebSocket server
+    
+        function fetchFiles() {
+            fetch(`${serverIP}/api/uploads`)
+                .then(res => res.json())
+                .then(files => {
+                    const fileList = document.getElementById("fileList");
+                    fileList.innerHTML = "";
+                    files.forEach(file => addFileToList(file.fileName, file.fileUrl));
+                    console.log("Fetched files:", files.map(file => file.fileName).join(", "));
+                })
+                .catch(err => console.error("Error fetching files:", err));
+        }
+        function downloadFile() {
+            const fileName = document.getElementById("fileNameInput").value.trim();
+            if (!fileName) return alert("Please enter a file name");
+
+            const fileUrl = `http://172.20.10.4:3000/api/download/${fileName}`;
+            fetch(fileUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("File not found");
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.style.display = "none";
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(err => {
+                    alert(err.message);
+                    console.error("Error downloading file:", err);
+                });
+        }
+    
+        function addFileToList(fileName, fileUrl) {
+            const fileList = document.getElementById("fileList");
+            const li = document.createElement("li");
+            li.classList.add("file-item");
+            li.innerHTML = `<a class="file-link" href="${fileUrl}" target="_blank">${fileName}</a>`;
+            fileList.appendChild(li);
+        }
+    
+        // Fetch files on page load
+        fetchFiles();
+    
+        // Listen for real-time file updates
+        socket.on("newFile", (data) => {
+            addFileToList(data.fileName, data.fileUrl);
+        });
+    </script>
+</body>
+</html>

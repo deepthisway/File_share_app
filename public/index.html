@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h2, h3 {
+            color: #333;
+        }
+
+        .upload-container {
+            max-width: 400px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 16px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .upload-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* File List */
+        .file-container {
+            max-width: 500px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #fileList {
+            list-style: none;
+            padding: 0;
+        }
+        .file-item {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+        .file-item:hover {
+            transform: translateY(-2px);
+            background: #e8f0ff;
+        }
+
+        .file-link {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        .file-link:hover {
+            color: #0056b3;
+        }
+
+        /* Upload Status */
+        #uploadStatus {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #28a745;
+        }
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1e1e1e;
+                color: #f4f4f4;
+            }
+            .upload-container, .file-container {
+                background: #2c2c2c;
+                box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
+            }
+            .file-item {
+                background: #3a3a3a;
+            }
+            .file-item:hover {
+                background: #505050;
+            }
+            .file-link {
+                color: #00aaff;
+            }
+            .file-link:hover {
+                color: #0088cc;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Upload a File</h2>
+    
+    <div class="upload-container">
+        <input type="file" id="fileInput" class="file-input">
+        <button class="upload-btn" onclick="uploadFile()">Upload</button>
+        <p id="uploadStatus"></p>
+    </div>
+
+    <h3>Uploaded Files</h3>
+    
+    <div class="file-container">
+        <ul id="fileList"></ul>
+    </div>
+
+
+    <script>
+        const socket = io("http://172.20.10.4");
+
+        function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+            if (!file) return alert("Please select a file");
+
+            const allowedTypes = ["image/jpeg", "image/png", "application/pdf", "text/plain"];
+            if (!allowedTypes.includes(file.type)) {
+                return alert("Only JPG, PNG, PDF, and TXT files are allowed");
+            }
+
+            document.getElementById("uploadStatus").innerText = "Uploading...";
+
+            fetch("http://172.20.10.4:3000/upload", {
+                method: "POST",
+                headers: { "Content-Type": file.type },
+                body: file
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("uploadStatus").innerText = "Upload successful!";
+                addFileToList(data.fileName, data.fileUrl);
+            })
+            .catch(err => {
+                document.getElementById("uploadStatus").innerText = "Upload failed.";
+                console.error("Upload failed:", err);
+            });
+        }
+
+        function addFileToList(fileName, fileUrl) {
+            const fileList = document.getElementById("fileList");
+            const li = document.createElement("li");
+            li.classList.add("file-item");
+            li.innerHTML = `<a class="file-link" href="${fileUrl}" target="_blank">${fileName}</a>`;
+            fileList.appendChild(li);
+        }
+
+        socket.on("newFile", (data) => {
+            addFileToList(data.fileName, data.fileUrl);
+        });
+
+    </script>
+
+</body>
+</html>
