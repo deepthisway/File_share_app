@@ -10,7 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "*", // Allow all origins (for development)
+        origin: "*", 
         methods: ["GET", "POST"]
     }
 });
@@ -18,7 +18,8 @@ const io = socketIo(server, {
 app.use(cors());
 
 const uploadDir = path.join(__dirname, "uploads");
-const serverIP = ip.address();  
+const serverIP = ip.address(); 
+ 
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
@@ -38,18 +39,18 @@ app.get("/api/uploads", (req, res) => {
 });
 
 app.post("/upload", (req, res) => {
-    const fileType = req.headers["content-type"];
-    const ext = getExtension(fileType);
+    const fileType = req.headers["content-type"]; // we need this in order to determine the file extension
+    const ext = getExtension(fileType); // get the file extension based on the content type
 
     if (!ext) {
         return res.status(400).json({ error: "Unsupported file type" });
     }
 
-    const fileName = `${Date.now()}.${ext}`;
+    const fileName = `${Date.now()}.${ext}`; // we can use the original file name by parsing the content-disposition header 
     const filePath = path.join(uploadDir, fileName);
     const writeStream = fs.createWriteStream(filePath);
 
-    req.pipe(writeStream);
+    req.pipe(writeStream); // req provides the file that was given on the front end and writes to the file path
 
     req.on("end", () => {
         const fileUrl = `http://${serverIP}:3000/uploads/${fileName}`;

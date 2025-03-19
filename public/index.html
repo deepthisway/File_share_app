@@ -141,52 +141,22 @@
         <ul id="fileList"></ul>
     </div>
 
-<<<<<<< HEAD
 
     <script>
         const socket = io("http://172.20.10.4");
 
-=======
-    <script>
-        function getServerURL() {
-            return localStorage.getItem("serverURL") || window.location.origin;
-        }
-    
-        function saveServerURL() {
-            const ip = document.getElementById("serverAddress").value.trim();
-            if (!ip) return alert("Please enter a valid IP address");
-            localStorage.setItem("serverURL", `http://${ip}`);
-            location.reload();
-        }
-    
-        const serverURL = getServerURL();
-        const socket = io(serverURL);
-    
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
         function uploadFile() {
             const fileInput = document.getElementById("fileInput");
             const file = fileInput.files[0];
             if (!file) return alert("Please select a file");
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
             const allowedTypes = ["image/jpeg", "image/png", "application/pdf", "text/plain"];
             if (!allowedTypes.includes(file.type)) {
                 return alert("Only JPG, PNG, PDF, and TXT files are allowed");
             }
-<<<<<<< HEAD
 
             document.getElementById("uploadStatus").innerText = "Uploading...";
 
             fetch("http://172.20.10.4:3000/upload", {
-=======
-    
-            document.getElementById("uploadStatus").innerText = "Uploading...";
-    
-            fetch(`${serverURL}/upload`, {
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
                 method: "POST",
                 headers: { "Content-Type": file.type },
                 body: file
@@ -201,11 +171,6 @@
                 console.error("Upload failed:", err);
             });
         }
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
         function addFileToList(fileName, fileUrl) {
             const fileList = document.getElementById("fileList");
             const li = document.createElement("li");
@@ -213,21 +178,12 @@
             li.innerHTML = `<a class="file-link" href="${fileUrl}" target="_blank">${fileName}</a>`;
             fileList.appendChild(li);
         }
-<<<<<<< HEAD
 
         socket.on("newFile", (data) => {
             addFileToList(data.fileName, data.fileUrl);
         });
 
     </script>
-=======
-    
-        socket.on("newFile", (data) => {
-            addFileToList(data.fileName, data.fileUrl);
-        });
-    </script>
-    
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
 
 </body>
 </html>

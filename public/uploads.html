@@ -7,10 +7,7 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <style>
-<<<<<<< HEAD
         /* General Styles */
-=======
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
         body {
             font-family: Arial, sans-serif;
             text-align: center;
@@ -24,20 +21,14 @@
             font-size: 24px;
         }
 
-<<<<<<< HEAD
         /* File List Container */
         #fileContainer {
             max-width: 600px;
-=======
-        #fileContainer {
-            max-width: 900px;
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
             margin: 20px auto;
             background: #fff;
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-<<<<<<< HEAD
         }
 
         /* File List */
@@ -56,34 +47,11 @@
             align-items: center;
             justify-content: space-between;
             transition: transform 0.2s ease, background 0.3s ease;
-=======
-            display: grid;
-            grid-template-columns: repeat(auto-fill, 100px);
-            gap: 50px;
-            justify-content: center;
-        }
-
-        .file-item {
-            width: 110px;
-            height: 110px;
-            background: #f9f9f9;
-            padding: 5px;
-            border-radius: 8px;
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, background 0.3s ease;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
         }
         .file-item:hover {
             transform: translateY(-2px);
             background: #e8f0ff;
         }
-<<<<<<< HEAD
         .file-link {
             text-decoration: none;
             color: #007bff;
@@ -95,32 +63,6 @@
         }
 
         /* Dark Mode */
-=======
-
-        .file-preview {
-            width: 100%;
-            height: 80%;
-            object-fit: cover;
-            border-radius: 5px;
-        }
-
-        .file-icon {
-            font-size: 30px;
-            color: #007bff;
-        }
-
-        .file-link {
-            text-decoration: none;
-            color: #007bff;
-            font-size: 12px;
-            font-weight: bold;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            width: 100%;
-        }
-
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
         @media (prefers-color-scheme: dark) {
             body {
                 background-color: #1e1e1e;
@@ -148,7 +90,6 @@
 <body>
     <h2>Uploaded Files</h2>
     
-<<<<<<< HEAD
     <div id="fileContainer">
         <ul id="fileList"></ul>
     </div>
@@ -175,23 +116,10 @@
         const serverIP = getServerIP(); // Get the current server IP
         const socket = io(serverIP); // Connect to the WebSocket server
     
-=======
-    <div id="fileContainer"></div>
-
-    <script>
-        function getServerIP() {
-            return localStorage.getItem("serverIP") || window.location.origin;
-        }
-
-        const serverIP = getServerIP();
-        const socket = io(serverIP);
-
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
         function fetchFiles() {
             fetch(`${serverIP}/api/uploads`)
                 .then(res => res.json())
                 .then(files => {
-<<<<<<< HEAD
                     const fileList = document.getElementById("fileList");
                     fileList.innerHTML = "";
                     files.forEach(file => addFileToList(file.fileName, file.fileUrl));
@@ -239,57 +167,6 @@
         fetchFiles();
     
         // Listen for real-time file updates
-=======
-                    const fileContainer = document.getElementById("fileContainer");
-                    fileContainer.innerHTML = "";
-                    files.forEach(file => addFileToList(file.fileName, file.fileUrl));
-                })
-                .catch(err => console.error("Error fetching files:", err));
-        }
-
-        function addFileToList(fileName, fileUrl) {
-            const fileContainer = document.getElementById("fileContainer");
-            const fileItem = document.createElement("div");
-            fileItem.classList.add("file-item");
-
-            let previewElement;
-
-            if (fileUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i)) {
-                // Image Preview
-                previewElement = document.createElement("img");
-                previewElement.src = fileUrl;
-                previewElement.classList.add("file-preview");
-            } else if (fileUrl.match(/\.(pdf)$/i)) {
-                // PDF Preview
-                previewElement = document.createElement("div");
-                previewElement.classList.add("file-icon");
-                previewElement.innerHTML = "📄"; // PDF icon
-            } else if (fileUrl.match(/\.(txt)$/i)) {
-                // Text File Preview
-                previewElement = document.createElement("div");
-                previewElement.classList.add("file-icon");
-                previewElement.innerHTML = "📝"; // Text icon
-            } else {
-                // Default Icon for Other Files
-                previewElement = document.createElement("div");
-                previewElement.classList.add("file-icon");
-                previewElement.innerHTML = "📁"; // Generic file icon
-            }
-
-            const link = document.createElement("a");
-            link.href = fileUrl;
-            link.target = "_blank";
-            link.classList.add("file-link");
-            link.innerText = fileName.length > 10 ? fileName.substring(0, 10) + "..." : fileName;
-
-            fileItem.appendChild(previewElement);
-            fileItem.appendChild(link);
-            fileContainer.appendChild(fileItem);
-        }
-
-        fetchFiles();
-
->>>>>>> b49d5318aad25253792523a268738c4b841a08af
         socket.on("newFile", (data) => {
             addFileToList(data.fileName, data.fileUrl);
         });
