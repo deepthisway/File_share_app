@@ -1,10 +1,9 @@
 # Class Challenge: Server-Client File Sharing App
 
 ## Challenge Overview
-Create an application with both a server interface and a client interface. The goal is to upload files to the server using the Server Interface, which should then be visible on another PC with the Client Interface open. The Client should also be able to download any file stored on the server.
+Create an application with both a server interface and a client interface. The goal is to upload files to the server using the Server Interface, which should then be visible on another PC with the Client Interface open. The Client should also be able to download any file stored on the server. This application is built using vanilla JavaScript, without the use of libraries like Multer.
 
-***Note***: This application is built using vanilla JavaScript, without the use of libraries like Multer.
-Update the IP address in index.html with the current IP Address shown in the terminal of IDE 
+***Note***: Update the IP address in index.html with the current IP Address shown in the terminal of IDE 
 
 ## Usage Instructions
 
